@@ -24,14 +24,29 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #    endif()
 #endif()
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+find_package(QT NAMES Qt5 COMPONENTS Widgets Bluetooth REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Bluetooth REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        bthcentralwidget.cpp
+        bthcentralwidget.h
+        bthcentralwidget.ui
+        bthperipheralwidget.cpp
+        bthperipheralwidget.h
+        bthperipheralwidget.ui
+        bthclipboardwidget.cpp
+        bthclipboardwidget.h
+        bthclipboardwidget.ui
+        bthperipheraldevice.cpp
+        bthperipheraldevice.h
+        bthcentraldevice.cpp
+        bthcentraldevice.h
+        bthclipboard.cpp
+        bthclipboard.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -50,4 +65,4 @@ else()
     endif()
 endif()
 
-target_link_libraries(bluetooth-clipboard PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(bluetooth-clipboard PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Bluetooth)

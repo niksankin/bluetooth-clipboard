@@ -17,6 +17,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+    //BthDev dev;
 };
 
 #endif // MAINWINDOW_H
