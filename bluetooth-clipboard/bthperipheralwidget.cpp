@@ -19,8 +19,6 @@ BthPeripheralWidget::BthPeripheralWidget(QWidget *parent) :
 
     peripheralBackend = peripheralDevice;
 
-    ui->clientDevices->addItem("puk");
-
     // TODO: maybe disconnect all clients when server off
     connect(ui->advertisingControl, &QPushButton::clicked, this, [this](bool checked){
         if(ui->advertisingControl->text() == startAdvertisingStr){

@@ -13,7 +13,7 @@ class BthCentralDevice: public QObject
     Q_OBJECT
 
 public:
-    BthCentralDevice();
+    explicit BthCentralDevice(QObject *parent = nullptr);
     ~BthCentralDevice();
 
     void startScan();

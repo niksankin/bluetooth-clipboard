@@ -1,6 +1,7 @@
 #include "bthperipheraldevice.h"
 
-BthPeripheralDevice::BthPeripheralDevice()
+BthPeripheralDevice::BthPeripheralDevice(QObject *parent)
+    :QObject(parent)
 {
     server = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
 }

@@ -14,7 +14,7 @@ class BthPeripheralDevice: public QObject
     Q_OBJECT
 
 public:
-    BthPeripheralDevice();
+    explicit BthPeripheralDevice(QObject *parent = nullptr);
     ~BthPeripheralDevice();
 
     void startServer();

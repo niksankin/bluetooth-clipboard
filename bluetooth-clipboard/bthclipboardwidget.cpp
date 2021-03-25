@@ -11,7 +11,6 @@ BthClipboardWidget::BthClipboardWidget(QWidget *parent) :
 
     ui->copyToClipboard->setEnabled(false);
     ui->sendClipboard->setEnabled(false);
-    ui->receivedClipboards->addItem("kek");
 
     connect(ui->sendClipboard, &QPushButton::clicked, this, [this](bool checked){
         auto currentClipboard = ui->receivedClipboards->currentItem();

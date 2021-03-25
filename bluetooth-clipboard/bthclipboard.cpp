@@ -1,6 +1,8 @@
 #include "bthclipboard.h"
 
-BthClipboard::BthClipboard(){
+BthClipboard::BthClipboard(QObject *parent)
+    :QObject(parent)
+{
 
 }
 

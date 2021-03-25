@@ -1,6 +1,7 @@
 #include "bthcentraldevice.h"
 
-BthCentralDevice::BthCentralDevice()
+BthCentralDevice::BthCentralDevice(QObject *parent)
+    :QObject(parent)
 {
     scanner = new QBluetoothDeviceDiscoveryAgent(this);
 }

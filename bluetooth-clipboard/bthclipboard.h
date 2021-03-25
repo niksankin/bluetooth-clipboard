@@ -9,7 +9,7 @@ class BthClipboard : public QObject
 {
     Q_OBJECT
 public:
-    BthClipboard();
+    explicit BthClipboard(QObject *parent = nullptr);
     ~BthClipboard();
 
     void copyToClipboard(QString clipboardText);
