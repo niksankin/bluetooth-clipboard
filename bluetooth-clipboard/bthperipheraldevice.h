@@ -8,6 +8,7 @@
 #include <QtBluetooth/QBluetoothSocket>
 #include <QtBluetooth/QBluetoothServer>
 #include <QtBluetooth/QBluetoothAddress>
+#include <QtBluetooth/QBluetoothHostInfo>
 
 class BthPeripheralDevice: public QObject
 {
@@ -32,9 +33,16 @@ signals:
     void deviceDisconnected(QBluetoothAddress address);
     void dataReceived(QBluetoothAddress address, QByteArray data);
 
+private slots:
+    void onNewConnection();
+
 private:
     QHash<QString, QBluetoothSocket*> clients;
     QBluetoothServer* server = nullptr;
+    QBluetoothServiceInfo serviceInfo;
+
+    QList<QBluetoothHostInfo> localAdapters;
+    QBluetoothSocket* sock = nullptr;
 };
 
 #endif // BTHPERIPHERALDEVICE_H

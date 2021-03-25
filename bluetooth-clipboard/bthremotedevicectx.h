@@ -37,6 +37,7 @@ public:
     QBluetoothAddress getPeerAddress();
     QBluetoothUuid getPeerService();
     QBluetoothSocket::SocketState getSocketState();
+    QString getSocketErrorString();
 
     void setSocket(QBluetoothSocket* socket);
 
@@ -49,6 +50,7 @@ signals:
     void connected();
     void disconnected();
     void readyRead();
+    void error(QBluetoothSocket::SocketError error);
 
 private:
     QBluetoothSocket* socket = nullptr;

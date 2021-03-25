@@ -63,11 +63,31 @@ void BthRemoteDeviceCtx::setSocket(QBluetoothSocket* socket){
     connect(this->socket, &QBluetoothSocket::disconnected, this, [this](){
         emit disconnected();
     });
+
+    connect(this->socket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SLOT(error(QBluetoothSocket::SocketError)));
 }
 
 void BthRemoteDeviceCtx::resetDevice(){
     delete socket;
     socket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
+
+    connect(this->socket, &QBluetoothSocket::readyRead, this, [this](){
+        emit readyRead();
+    });
+
+    connect(this->socket, &QBluetoothSocket::connected, this, [this](){
+        emit connected();
+    });
+
+    connect(this->socket, &QBluetoothSocket::disconnected, this, [this](){
+        QBluetoothSocket* sock = static_cast<QBluetoothSocket*>(sender());
+        QString kek = sock->errorString();
+        auto error = sock->error();
+
+        emit disconnected();
+    });
+
+    connect(this->socket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SIGNAL(error(QBluetoothSocket::SocketError)));
 
     service = QBluetoothUuid();
     address = QBluetoothAddress();
@@ -75,4 +95,8 @@ void BthRemoteDeviceCtx::resetDevice(){
 
 QBluetoothSocket::SocketState BthRemoteDeviceCtx::getSocketState(){
     return socket->state();
+}
+
+QString BthRemoteDeviceCtx::getSocketErrorString(){
+    return socket->errorString();
 }

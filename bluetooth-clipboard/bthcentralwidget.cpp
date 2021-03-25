@@ -37,7 +37,7 @@ BthCentralWidget::BthCentralWidget(QWidget *parent) :
         }
     });
 
-    connect(centralBackend, &BthCentralDevice::scanCancelled, this, [this](){
+    connect(centralBackend, &BthCentralDevice::scanFinished, this, [this](){
         ui->scanControl->setText(startScanStr);
 
         emit scanClicked(false);
@@ -74,7 +74,8 @@ BthCentralWidget::BthCentralWidget(QWidget *parent) :
     });
 
     connect(centralBackend, &BthCentralDevice::deviceFound, this, [this](QBluetoothAddress address){
-        ui->foundDevices->addItem(address.toString());
+        if(!ui->foundDevices->findItems(address.toString(), Qt::MatchFixedString).size())
+            ui->foundDevices->addItem(address.toString());
     });
 
     connect(centralBackend, &BthCentralDevice::deviceConnected, this, [this](QBluetoothAddress address){
@@ -86,6 +87,8 @@ BthCentralWidget::BthCentralWidget(QWidget *parent) :
 
     connect(centralBackend, &BthCentralDevice::deviceDisconnected, this, [this](QBluetoothAddress address){
         auto currentDevice = ui->foundDevices->currentItem();
+        QString kek = currentDevice->text();
+        QString puk = address.toString();
 
         if(currentDevice->text() == address.toString())
             ui->connectionControl->setText(connectToDeviceStr);

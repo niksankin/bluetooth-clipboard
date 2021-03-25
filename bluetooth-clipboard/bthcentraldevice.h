@@ -6,7 +6,11 @@
 #include <QJsonObject>
 #include <QtBluetooth/QBluetoothAddress>
 #include <QtBluetooth/QBluetoothSocket>
+#include <QtBluetooth/QBluetoothServiceDiscoveryAgent>
 #include <QtBluetooth/QBluetoothDeviceDiscoveryAgent>
+#include <QtBluetooth/QBluetoothLocalDevice>
+
+#include "bthremotedevicectx.h"
 
 class BthCentralDevice: public QObject
 {
@@ -25,28 +29,23 @@ public:
 
     void write(const QBluetoothAddress& addr, const QByteArray& data);
 
-    // may be useless
-    //QJsonObject getDeviceInfo(const QBluetoothAddress& addr);
-    QByteArray getDevicePendingData(const QBluetoothAddress& addr);
-
 signals:
     void deviceFound(QBluetoothAddress address);
-    // TODO: maybe deviceDisappeared or smth
-    //void deviceUpdated(QBluetoothAddress address);
     void deviceConnected(QBluetoothAddress address);
     void deviceDisconnected(QBluetoothAddress address);
+    void connectionError(QString what);
     void dataReceived(QBluetoothAddress address, QByteArray data);
-    void scanCancelled();
     void scanFinished();
 
 private slots:
-    void onDeviceFound();
-    void onDeviceUpdated();
+    void onDeviceFound(const QBluetoothDeviceInfo& deviceInfo);
     void onReceiveDataReady();
 
 private:
-    QHash<QString, QBluetoothSocket*> clients;
-    QBluetoothDeviceDiscoveryAgent* scanner = nullptr;
+    QHash<QString, BthRemoteDeviceCtx*> clientsCtx;
+    QBluetoothDeviceDiscoveryAgent* deviceScanner = nullptr;
+
+    void resetScanner();
 };
 
 #endif // BTHCENTRALDEVICE_H
