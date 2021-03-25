@@ -15,14 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="BthCentralWidget" name="centralWidget" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout"/>
-    </widget>
-   </item>
-   <item>
-    <widget class="BthPeripheralWidget" name="peripheralWidget" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout_2"/>
-    </widget>
+    <widget class="QWidget" name="widget" native="true"/>
    </item>
    <item>
     <widget class="BthClipboardWidget" name="clipboardWidget" native="true">
@@ -32,18 +25,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>BthCentralWidget</class>
-   <extends>QWidget</extends>
-   <header>bthcentralwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>BthPeripheralWidget</class>
-   <extends>QWidget</extends>
-   <header>bthperipheralwidget.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>BthClipboardWidget</class>
    <extends>QWidget</extends>

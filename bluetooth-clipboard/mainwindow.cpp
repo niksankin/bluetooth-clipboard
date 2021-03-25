@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "bthcentralwidget.h"
+#include "bthperipheralwidget.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QWidget(parent),
@@ -7,37 +9,24 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->centralWidget, &BthCentralWidget::scanClicked, this, [this](bool isActiveState){
-        if(isActiveState){
-            ui->peripheralWidget->resetWidget();
-            ui->peripheralWidget->setEnabled(false);
-        }
-        else{
-            ui->peripheralWidget->setEnabled(true);
-        }
-    });
+#ifdef Q_OS_ANDROID
+    BthCentralWidget* widget = new BthCentralWidget(ui->widget->parentWidget());
+    ui->verticalLayout->replaceWidget(ui->widget, widget);
 
-    connect(ui->peripheralWidget, &BthPeripheralWidget::advertisingClicked, this, [this](bool isActiveState){
-        if(isActiveState){
-            ui->centralWidget->resetWidget();
-            ui->centralWidget->setEnabled(false);
-        }
-        else{
-            ui->centralWidget->setEnabled(true);
-        }
-    });
+    connect(static_cast<BthCentralWidget*>(ui->widget), &BthCentralWidget::emptyDeviceSelection, ui->clipboardWidget, &BthClipboardWidget::onAbsentDevice);
+    connect(static_cast<BthCentralWidget*>(ui->widget), &BthCentralWidget::deviceDataReceived, ui->clipboardWidget, &BthClipboardWidget::onDeviceDataReceived);
+    connect(static_cast<BthCentralWidget*>(ui->widget), &BthCentralWidget::deviceChanged, ui->clipboardWidget, &BthClipboardWidget::onDeviceChanged);
+    connect(ui->clipboardWidget, &BthClipboardWidget::writeDeviceData, static_cast<BthCentralWidget*>(ui->widget), &BthCentralWidget::deviceWriteData);
+#else
+    BthPeripheralWidget* widget = new BthPeripheralWidget(ui->widget->parentWidget());
+    ui->verticalLayout->replaceWidget(ui->widget, widget);
 
-    connect(ui->peripheralWidget, &BthPeripheralWidget::emptyDeviceSelection, ui->clipboardWidget, &BthClipboardWidget::onAbsentDevice);
-    connect(ui->centralWidget, &BthCentralWidget::emptyDeviceSelection, ui->clipboardWidget, &BthClipboardWidget::onAbsentDevice);
+    connect(static_cast<BthPeripheralWidget*>(ui->widget), &BthPeripheralWidget::emptyDeviceSelection, ui->clipboardWidget, &BthClipboardWidget::onAbsentDevice);
+    connect(static_cast<BthPeripheralWidget*>(ui->widget), &BthPeripheralWidget::deviceDataReceived, ui->clipboardWidget, &BthClipboardWidget::onDeviceDataReceived);
+    connect(static_cast<BthPeripheralWidget*>(ui->widget), &BthPeripheralWidget::deviceChanged, ui->clipboardWidget, &BthClipboardWidget::onDeviceChanged);
+    connect(ui->clipboardWidget, &BthClipboardWidget::writeDeviceData, static_cast<BthPeripheralWidget*>(ui->widget), &BthPeripheralWidget::deviceWriteData);
 
-    connect(ui->peripheralWidget, &BthPeripheralWidget::deviceDataReceived, ui->clipboardWidget, &BthClipboardWidget::onDeviceDataReceived);
-    connect(ui->centralWidget, &BthCentralWidget::deviceDataReceived, ui->clipboardWidget, &BthClipboardWidget::onDeviceDataReceived);
-
-    connect(ui->peripheralWidget, &BthPeripheralWidget::deviceChanged, ui->clipboardWidget, &BthClipboardWidget::onDeviceChanged);
-    connect(ui->centralWidget, &BthCentralWidget::deviceChanged, ui->clipboardWidget, &BthClipboardWidget::onDeviceChanged);
-
-    connect(ui->clipboardWidget, &BthClipboardWidget::writeDeviceData, ui->peripheralWidget, &BthPeripheralWidget::deviceWriteData);
-    connect(ui->clipboardWidget, &BthClipboardWidget::writeDeviceData, ui->centralWidget, &BthCentralWidget::deviceWriteData);
+#endif
 }
 
 MainWindow::~MainWindow()
