@@ -49,6 +49,8 @@ set(PROJECT_SOURCES
         bthclipboard.h
         constants.cpp
         constants.h
+        bthremotedevicectx.cpp
+        bthremotedevicectx.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
