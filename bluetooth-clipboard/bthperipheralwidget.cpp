@@ -40,14 +40,14 @@ BthPeripheralWidget::BthPeripheralWidget(QWidget *parent) :
     connect(ui->connectionControl, &QPushButton::clicked, this, [this](bool checked){
         auto currentDevice = ui->clientDevices->currentItem();
 
-        peripheralBackend->disconnectFromDevice(QBluetoothAddress(currentDevice->text()));
+        peripheralBackend->disconnectFromDevice(currentDevice->text());
     });
 
     connect(ui->clientDevices, &QListWidget::currentItemChanged, this, [this](QListWidgetItem *current, QListWidgetItem *previous){
         if(current != nullptr){
             ui->connectionControl->setEnabled(true);
 
-            emit deviceChanged(QBluetoothAddress(current->text()));
+            emit deviceChanged(current->text());
         }
         else{
             resetWidget();
@@ -56,22 +56,26 @@ BthPeripheralWidget::BthPeripheralWidget(QWidget *parent) :
         }
     });
 
-    connect(peripheralBackend, &BthPeripheralDevice::deviceConnected, this, [this](QBluetoothAddress address){
-        ui->clientDevices->addItem(address.toString());
+    connect(peripheralBackend, &BthPeripheralDevice::deviceConnected, this, [this](const QString& name){
+        ui->clientDevices->addItem(name);
     });
 
-    connect(peripheralBackend, &BthPeripheralDevice::deviceDisconnected, this, [this](QBluetoothAddress address){
-        auto foundItem = ui->clientDevices->findItems(address.toString(), Qt::MatchFixedString);
+    connect(peripheralBackend, &BthPeripheralDevice::deviceDisconnected, this, [this](const QString& name){
+        auto foundItem = ui->clientDevices->findItems(name, Qt::MatchFixedString);
 
         // only single row may exist for specific bluetooth device address
-        ui->clientDevices->removeItemWidget(foundItem.at(0));
+        ui->clientDevices->blockSignals(true);
+        QListWidgetItem* item = ui->clientDevices->takeItem(0);
+        ui->clientDevices->blockSignals(false);
+
+        delete item;
 
         if(!ui->clientDevices->count())
             ui->connectionControl->setEnabled(false);
     });
 
-    connect(peripheralBackend, &BthPeripheralDevice::dataReceived, this, [this](QBluetoothAddress address, QByteArray data){
-        emit deviceDataReceived(address, data);
+    connect(peripheralBackend, &BthPeripheralDevice::dataReceived, this, [this](const QString& name, QByteArray data){
+        emit deviceDataReceived(name, data);
     });
 }
 
@@ -87,6 +91,6 @@ void BthPeripheralWidget::resetWidget(){
     ui->connectionControl->setEnabled(false);
 }
 
-void BthPeripheralWidget::deviceWriteData(QBluetoothAddress address, QByteArray data){
-    peripheralBackend->write(address, data);
+void BthPeripheralWidget::deviceWriteData(const QString name, QByteArray data){
+    peripheralBackend->write(name, data);
 }

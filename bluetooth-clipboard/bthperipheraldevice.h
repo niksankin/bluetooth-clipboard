@@ -10,6 +10,8 @@
 #include <QtBluetooth/QBluetoothAddress>
 #include <QtBluetooth/QBluetoothHostInfo>
 
+#include "bthremotedevicectx.h"
+
 class BthPeripheralDevice: public QObject
 {
     Q_OBJECT
@@ -21,28 +23,23 @@ public:
     void startServer();
     void endServer();
 
-    void disconnectFromDevice(const QBluetoothAddress& addr);
-    void write(const QBluetoothAddress& addr, const QByteArray& data);
-
-    // may be useless
-    // QJsonObject getDeviceInfo(const QBluetoothAddress& addr);
-    QByteArray getDevicePendingData(const QBluetoothAddress& addr);
+    void disconnectFromDevice(const QString name);
+    void write(const QString name, const QByteArray data);
 
 signals:
-    void deviceConnected(QBluetoothAddress address);
-    void deviceDisconnected(QBluetoothAddress address);
-    void dataReceived(QBluetoothAddress address, QByteArray data);
+    void deviceConnected(const QString name);
+    void deviceDisconnected(const QString name);
+    void connectionError(QString what);
+    void dataReceived(const QString name, QByteArray data);
 
 private slots:
-    void onNewConnection();
+    void onDeviceConnected();
+    void onReceiveDataReady();
 
 private:
-    QHash<QString, QBluetoothSocket*> clients;
+    QHash<QString, BthRemoteDeviceCtx*> clientsCtx;
     QBluetoothServer* server = nullptr;
     QBluetoothServiceInfo serviceInfo;
-
-    QList<QBluetoothHostInfo> localAdapters;
-    QBluetoothSocket* sock = nullptr;
 };
 
 #endif // BTHPERIPHERALDEVICE_H

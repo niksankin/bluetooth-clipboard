@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QHash>
-#include <QtBluetooth/QBluetoothAddress>
+#include <QClipboard>
 
 class BthClipboard : public QObject
 {
@@ -13,13 +13,15 @@ public:
     ~BthClipboard();
 
     void copyToClipboard(QString clipboardText);
+    QString getClipboard();
 
-    QVector<QString> getClipboards(QBluetoothAddress address);
-    void clearClipboards(QBluetoothAddress address);
-    void addClipboard(QBluetoothAddress address, QString data);
+    QVector<QString> getDeviceClipboards(const QString& id);
+    void clearClipboards(const QString& id);
+    void addClipboard(const QString& id, QString data);
 
 private:
     QHash<QString, QVector<QString>> clipboardsModel;
+    QClipboard* clipboard = nullptr;
 };
 
 #endif // BTHCLIPBOARD_H

@@ -37,6 +37,8 @@ QBluetoothUuid BthRemoteDeviceCtx::getPeerService(){
 }
 
 qint64 BthRemoteDeviceCtx::writeData(const QByteArray &byteArray){
+    QBluetoothSocket::SocketState state = socket->state();
+
     return socket->write(byteArray);
 }
 
@@ -46,11 +48,17 @@ QByteArray BthRemoteDeviceCtx::readData(qint64 maxSize){
 
 void BthRemoteDeviceCtx::setSocket(QBluetoothSocket* socket){
 
+    if(this->socket != nullptr)
+        delete this->socket;
+
     this->socket = socket;
 
-    // already connected socket, given from server
-    if(!socket->peerAddress().isNull())
-        this->address = socket->peerAddress();
+    // if using socket that returned from server
+    // these sockets have NULL Bluetooth peer address
+    if(socket->peerAddress().isNull() && socket->state() == QBluetoothSocket::ConnectedState)
+        this->name = socket->peerName();
+
+    this->address = socket->peerAddress();
 
     connect(this->socket, &QBluetoothSocket::readyRead, this, [this](){
         emit readyRead();
@@ -68,29 +76,9 @@ void BthRemoteDeviceCtx::setSocket(QBluetoothSocket* socket){
 }
 
 void BthRemoteDeviceCtx::resetDevice(){
-    delete socket;
-    socket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
-
-    connect(this->socket, &QBluetoothSocket::readyRead, this, [this](){
-        emit readyRead();
-    });
-
-    connect(this->socket, &QBluetoothSocket::connected, this, [this](){
-        emit connected();
-    });
-
-    connect(this->socket, &QBluetoothSocket::disconnected, this, [this](){
-        QBluetoothSocket* sock = static_cast<QBluetoothSocket*>(sender());
-        QString kek = sock->errorString();
-        auto error = sock->error();
-
-        emit disconnected();
-    });
-
-    connect(this->socket, SIGNAL(error(QBluetoothSocket::SocketError)), this, SIGNAL(error(QBluetoothSocket::SocketError)));
+    setSocket(new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol));
 
     service = QBluetoothUuid();
-    address = QBluetoothAddress();
 }
 
 QBluetoothSocket::SocketState BthRemoteDeviceCtx::getSocketState(){
@@ -99,4 +87,8 @@ QBluetoothSocket::SocketState BthRemoteDeviceCtx::getSocketState(){
 
 QString BthRemoteDeviceCtx::getSocketErrorString(){
     return socket->errorString();
+}
+
+QString BthRemoteDeviceCtx::getPeerName(){
+    return name;
 }

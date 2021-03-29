@@ -15,7 +15,10 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QWidget" name="widget" native="true"/>
+    <widget class="BthCentralWidget" name="centralWidget" native="true"/>
+   </item>
+   <item>
+    <widget class="BthPeripheralWidget" name="peripheralWidget" native="true"/>
    </item>
    <item>
     <widget class="BthClipboardWidget" name="clipboardWidget" native="true">
@@ -29,6 +32,18 @@
    <class>BthClipboardWidget</class>
    <extends>QWidget</extends>
    <header>bthclipboardwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>BthPeripheralWidget</class>
+   <extends>QWidget</extends>
+   <header>bthperipheralwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>BthCentralWidget</class>
+   <extends>QWidget</extends>
+   <header>bthcentralwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

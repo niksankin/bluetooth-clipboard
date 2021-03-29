@@ -3,92 +3,121 @@
 #include "constants.h"
 
 #include <QtBluetooth/QBluetoothLocalDevice>
+#include <QtEndian>
+#include <QBuffer>
+#include <QDataStream>
 
 BthPeripheralDevice::BthPeripheralDevice(QObject *parent)
     :QObject(parent)
 {
     server = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
 
-    connect(server, &QBluetoothServer::newConnection, this, &BthPeripheralDevice::onNewConnection);
-
-    bool result = server->listen(QBluetoothAddress());
-
-    QBluetoothServiceInfo::Sequence profileSequence;
-    QBluetoothServiceInfo::Sequence classId;
-    classId << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::SerialPort));
-    classId << QVariant::fromValue(quint16(0x100));
-    profileSequence.append(QVariant::fromValue(classId));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList,
-                             profileSequence);
-
-    classId.clear();
-    classId << QVariant::fromValue(QBluetoothUuid(serviceUuid));
-    classId << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::SerialPort));
-
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceClassIds, classId);
-
-    //! [Service name, description and provider]
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceName, tr("Bt Chat Server"));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceDescription,
-                             tr("Example bluetooth chat server"));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceProvider, tr("qt-project.org"));
-    //! [Service name, description and provider]
-
-    //! [Service UUID set]
-    serviceInfo.setServiceUuid(QBluetoothUuid(serviceUuid));
-    //! [Service UUID set]
-
-    //! [Service Discoverability]
-    QBluetoothServiceInfo::Sequence publicBrowse;
-    publicBrowse << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::BrowseGroupList,
-                             publicBrowse);
-    //! [Service Discoverability]
-
-    //! [Protocol descriptor list]
-    QBluetoothServiceInfo::Sequence protocolDescriptorList;
-    QBluetoothServiceInfo::Sequence protocol;
-    protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::L2cap));
-    protocolDescriptorList.append(QVariant::fromValue(protocol));
-    protocol.clear();
-    protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::Rfcomm))
-             << QVariant::fromValue(quint8(server->serverPort()));
-    protocolDescriptorList.append(QVariant::fromValue(protocol));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList,
-                             protocolDescriptorList);
-    //! [Protocol descriptor list]
-
-    //! [Register service]
-    serviceInfo.registerService();
+    connect(server, &QBluetoothServer::newConnection, this, &BthPeripheralDevice::onDeviceConnected);
 }
 
 BthPeripheralDevice::~BthPeripheralDevice(){
     serviceInfo.unregisterService();
 
-    delete sock;
+    for(auto i : clientsCtx)
+        delete i;
+
     delete server;
 }
 
 void BthPeripheralDevice::startServer(){
+    server->listen();
 
+    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceName, tr("Bluetooth Clipboard Server"));
+    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceDescription,
+                             tr("Bluetooth clipboard syncronization tool"));
+    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceProvider, tr("HSE"));
+
+    serviceInfo.setServiceUuid(QBluetoothUuid(serviceUuid));
+
+    QBluetoothServiceInfo::Sequence publicBrowse;
+    publicBrowse << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::PublicBrowseGroup));
+    serviceInfo.setAttribute(QBluetoothServiceInfo::BrowseGroupList,
+                             publicBrowse);
+
+    QBluetoothServiceInfo::Sequence protocolDescriptorList;
+    QBluetoothServiceInfo::Sequence protocol;
+
+    protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::Rfcomm))
+             << QVariant::fromValue(quint8(server->serverPort()));
+    protocolDescriptorList.append(QVariant::fromValue(protocol));
+    serviceInfo.setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList,
+                             protocolDescriptorList);
+
+    serviceInfo.registerService();
 }
 
 void BthPeripheralDevice::endServer(){
-
+    serviceInfo.unregisterService();
+    server->close();
 }
 
-void BthPeripheralDevice::write(const QBluetoothAddress& addr, const QByteArray& data){
+void BthPeripheralDevice::write(const QString name, const QByteArray data){
+    QByteArray dataSize;
+    QBuffer buf(&dataSize);
+    buf.open(QBuffer::WriteOnly);
 
+    qint64 size = data.size();
+
+    QDataStream stream(&buf);
+    stream << size;
+
+    buf.close();
+
+    clientsCtx[name]->writeData(dataSize);
+    clientsCtx[name]->writeData(data);
 }
 
-void BthPeripheralDevice::disconnectFromDevice(const QBluetoothAddress& addr){
-
+void BthPeripheralDevice::disconnectFromDevice(const QString name){
+    clientsCtx[name]->disconnectFromDevice();
 }
 
-QByteArray BthPeripheralDevice::getDevicePendingData(const QBluetoothAddress& addr){
-    return QByteArray();
+void BthPeripheralDevice::onDeviceConnected(){
+    QBluetoothSocket* socket = server->nextPendingConnection();
+
+    BthRemoteDeviceCtx* ctx = new BthRemoteDeviceCtx(socket);
+
+    clientsCtx.insert(ctx->getPeerName(), ctx);
+
+    connect(clientsCtx[ctx->getPeerName()], &BthRemoteDeviceCtx::readyRead, this, &BthPeripheralDevice::onReceiveDataReady);
+    connect(clientsCtx[ctx->getPeerName()], &BthRemoteDeviceCtx::connected, this, [this](){
+        BthRemoteDeviceCtx* ctx = static_cast<BthRemoteDeviceCtx*>(sender());
+
+        emit deviceConnected(ctx->getPeerName());
+    });
+    connect(clientsCtx[ctx->getPeerName()], &BthRemoteDeviceCtx::disconnected, this, [this](){
+        BthRemoteDeviceCtx* ctx = static_cast<BthRemoteDeviceCtx*>(sender());
+
+        emit deviceDisconnected(ctx->getPeerName());
+    });
+    connect(clientsCtx[ctx->getPeerName()], &BthRemoteDeviceCtx::error, this, [this](QBluetoothSocket::SocketError error){
+        BthRemoteDeviceCtx* ctx = static_cast<BthRemoteDeviceCtx*>(sender());
+
+        emit connectionError(ctx->getSocketErrorString());
+    });
+
+    emit deviceConnected(ctx->getPeerName());
 }
 
-void BthPeripheralDevice::onNewConnection(){
-    sock = server->nextPendingConnection();
+void BthPeripheralDevice::onReceiveDataReady(){
+    BthRemoteDeviceCtx* ctx = static_cast<BthRemoteDeviceCtx*>(sender());
+
+    QByteArray data = ctx->readData(sizeof(qint64));
+    qint64 dataLen;
+
+    QBuffer buf(&data);
+    buf.open(QBuffer::ReadOnly);
+
+    QDataStream stream(&buf);
+    stream >> dataLen;
+
+    buf.close();
+
+    data = ctx->readData(dataLen);
+
+    emit dataReceived(ctx->getPeerName(), data);
 }

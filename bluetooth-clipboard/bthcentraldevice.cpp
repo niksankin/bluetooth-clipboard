@@ -61,8 +61,10 @@ void BthCentralDevice::write(const QBluetoothAddress& addr, const QByteArray& da
     QBuffer buf(&dataSize);
     buf.open(QBuffer::WriteOnly);
 
+    qint64 size = data.size();
+
     QDataStream stream(&buf);
-    stream << data.size();
+    stream << size;
 
     buf.close();
 

@@ -36,10 +36,12 @@ public:
 
     QBluetoothAddress getPeerAddress();
     QBluetoothUuid getPeerService();
+    QString getPeerName();
     QBluetoothSocket::SocketState getSocketState();
     QString getSocketErrorString();
 
     void setSocket(QBluetoothSocket* socket);
+    void setAddress(const QBluetoothAddress& address);
 
     void resetDevice();
 
@@ -56,6 +58,7 @@ private:
     QBluetoothSocket* socket = nullptr;
     QBluetoothUuid  service;
     QBluetoothAddress address;
+    QString name;
 };
 
 #endif // BTHREMOTEDEVICECTX_H

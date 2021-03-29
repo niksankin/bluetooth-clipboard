@@ -1,27 +1,33 @@
 #include "bthclipboard.h"
 
+#include <QGuiApplication>
+
 BthClipboard::BthClipboard(QObject *parent)
     :QObject(parent)
 {
-
+    clipboard = QGuiApplication::clipboard();
 }
 
 BthClipboard::~BthClipboard(){
-
+    clipboard = nullptr;
 }
 
 void BthClipboard::copyToClipboard(QString clipboardText){
-
+    clipboard->setText(clipboardText);
 }
 
-QVector<QString> BthClipboard::getClipboards(QBluetoothAddress address){
-    return QVector<QString>();
+QString BthClipboard::getClipboard(){
+    return clipboard->text();
 }
 
-void BthClipboard::clearClipboards(QBluetoothAddress address){
-
+QVector<QString> BthClipboard::getDeviceClipboards(const QString& id){
+    return clipboardsModel[id];
 }
 
-void BthClipboard::addClipboard(QBluetoothAddress address, QString data){
+void BthClipboard::clearClipboards(const QString& id){
+    clipboardsModel[id].clear();
+}
 
+void BthClipboard::addClipboard(const QString& id, QString data){
+    clipboardsModel[id].append(data);
 }

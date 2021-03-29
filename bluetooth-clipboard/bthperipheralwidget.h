@@ -17,14 +17,14 @@ public:
     ~BthPeripheralWidget();
 
 signals:
-    void deviceChanged(QBluetoothAddress address);
-    void deviceDataReceived(QBluetoothAddress dataReceived, QByteArray data);
+    void deviceChanged(const QString name);
+    void deviceDataReceived(const QString name, QByteArray data);
     void advertisingClicked(bool isActiveState);
     void emptyDeviceSelection();
 
 public slots:
     void resetWidget();
-    void deviceWriteData(QBluetoothAddress address, QByteArray data);
+    void deviceWriteData(const QString name, QByteArray data);
 
 private:
     Ui::BthPeripheralWidget *ui;

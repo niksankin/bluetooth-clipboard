@@ -6,6 +6,8 @@
 #include <QtBluetooth/QBluetoothAddress>
 #include <QListWidget>
 
+#include "bthclipboard.h"
+
 namespace Ui {
 class BthClipboardWidget;
 }
@@ -19,18 +21,18 @@ public:
     ~BthClipboardWidget();
 
 signals:
-    void writeDeviceData(QBluetoothAddress address, QByteArray data);
+    void writeDeviceData(const QString id, QByteArray data);
 
 public slots:
-    void onDeviceDataReceived(QBluetoothAddress address, QByteArray data);
-    void onDeviceChanged(QBluetoothAddress address);
+    void onDeviceDataReceived(const QString id, QByteArray data);
+    void onDeviceChanged(const QString id);
     void onAbsentDevice();
 
 private:
     Ui::BthClipboardWidget *ui;
 
-    QClipboard* clipboardBackend = nullptr;
-    QBluetoothAddress currentDevice;
+    BthClipboard* clipboardBackend = nullptr;
+    QString currentDevice;
 };
 
 #endif // BTHCLIPBOARDWIDGET_H

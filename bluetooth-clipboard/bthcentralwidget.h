@@ -18,14 +18,14 @@ public:
     ~BthCentralWidget();
 
 signals:
-    void deviceChanged(QBluetoothAddress address);
-    void deviceDataReceived(QBluetoothAddress dataReceived, QByteArray data);
+    void deviceChanged(const QString address);
+    void deviceDataReceived(const QString address, QByteArray data);
     void scanClicked(bool isActiveState);
     void emptyDeviceSelection();
 
 public slots:
     void resetWidget();
-    void deviceWriteData(QBluetoothAddress address, QByteArray data);
+    void deviceWriteData(const QString address, QByteArray data);
 
 private:
     Ui::BthCentralWidget *ui;
