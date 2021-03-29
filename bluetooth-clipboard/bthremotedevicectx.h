@@ -46,7 +46,7 @@ public:
     void resetDevice();
 
     qint64 writeData(const QByteArray &byteArray);
-    QByteArray readData(qint64 maxSize);
+    QByteArray readData();
 
 signals:
     void connected();

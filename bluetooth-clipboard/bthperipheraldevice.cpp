@@ -56,22 +56,6 @@ void BthPeripheralDevice::endServer(){
     server->close();
 }
 
-void BthPeripheralDevice::write(const QString name, const QByteArray data){
-    QByteArray dataSize;
-    QBuffer buf(&dataSize);
-    buf.open(QBuffer::WriteOnly);
-
-    qint64 size = data.size();
-
-    QDataStream stream(&buf);
-    stream << size;
-
-    buf.close();
-
-    clientsCtx[name]->writeData(dataSize);
-    clientsCtx[name]->writeData(data);
-}
-
 void BthPeripheralDevice::disconnectFromDevice(const QString name){
     clientsCtx[name]->disconnectFromDevice();
 }
@@ -106,18 +90,11 @@ void BthPeripheralDevice::onDeviceConnected(){
 void BthPeripheralDevice::onReceiveDataReady(){
     BthRemoteDeviceCtx* ctx = static_cast<BthRemoteDeviceCtx*>(sender());
 
-    QByteArray data = ctx->readData(sizeof(qint64));
-    qint64 dataLen;
-
-    QBuffer buf(&data);
-    buf.open(QBuffer::ReadOnly);
-
-    QDataStream stream(&buf);
-    stream >> dataLen;
-
-    buf.close();
-
-    data = ctx->readData(dataLen);
+    QByteArray data = ctx->readData();
 
     emit dataReceived(ctx->getPeerName(), data);
+}
+
+void BthPeripheralDevice::write(const QString name, const QByteArray data){
+    clientsCtx[name]->writeData(data);
 }

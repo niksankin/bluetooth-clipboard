@@ -17,7 +17,9 @@ public:
     ~BthPeripheralWidget();
 
 signals:
-    void deviceChanged(const QString name);
+    void deviceChanged(const QString name, bool isConnected);
+    void deviceConnected(const QString name);
+    void deviceDisconnected(const QString name);
     void deviceDataReceived(const QString name, QByteArray data);
     void advertisingClicked(bool isActiveState);
     void emptyDeviceSelection();

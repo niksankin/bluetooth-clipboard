@@ -52,24 +52,43 @@ BthClipboardWidget::~BthClipboardWidget()
 void BthClipboardWidget::onDeviceDataReceived(const QString id, QByteArray data){
     clipboardBackend->addClipboard(id, data);
 
-    ui->receivedClipboards->addItem(QString(data));
+    if(currentDevice == id)
+        ui->receivedClipboards->addItem(QString(data));
 }
 
-void BthClipboardWidget::onDeviceChanged(const QString id){
+void BthClipboardWidget::onDeviceChanged(const QString id, bool isConnected){
     auto deviceClipboards = clipboardBackend->getDeviceClipboards(id);
 
     ui->receivedClipboards->clear();
-    ui->sendClipboard->setEnabled(true);
 
     for(auto i : deviceClipboards)
         ui->receivedClipboards->addItem(i);
 
     if(currentDevice != id)
         currentDevice = id;
+
+    if(isConnected)
+        ui->sendClipboard->setEnabled(true);
+    else
+        ui->sendClipboard->setEnabled(false);
 }
 
 void BthClipboardWidget::onAbsentDevice(){
     ui->sendClipboard->setEnabled(false);
 
     ui->receivedClipboards->clear();
+}
+
+void BthClipboardWidget::onDeviceConnected(const QString id){
+    if(currentDevice == id)
+    {
+        ui->sendClipboard->setEnabled(true);
+    }
+}
+
+void BthClipboardWidget::onDeviceDisconnected(const QString id){
+    if(currentDevice == id)
+    {
+        ui->sendClipboard->setEnabled(false);
+    }
 }

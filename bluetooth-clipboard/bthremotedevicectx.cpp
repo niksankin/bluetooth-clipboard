@@ -1,5 +1,11 @@
 #include "bthremotedevicectx.h"
 
+#include <QByteArray>
+#include <QBuffer>
+#include <QDataStream>
+
+#include "constants.h"
+
 BthRemoteDeviceCtx::BthRemoteDeviceCtx(QObject *parent) : QObject(parent)
 {
     resetDevice();
@@ -37,13 +43,41 @@ QBluetoothUuid BthRemoteDeviceCtx::getPeerService(){
 }
 
 qint64 BthRemoteDeviceCtx::writeData(const QByteArray &byteArray){
-    QBluetoothSocket::SocketState state = socket->state();
+    QByteArray dataSize;
+    QBuffer buf(&dataSize);
+    buf.open(QBuffer::WriteOnly);
 
-    return socket->write(byteArray);
+    qint64 size = byteArray.size();
+
+    if(byteArray.size() > maxDataLen)
+        size = maxDataLen;
+
+    QDataStream stream(&buf);
+    stream << size;
+
+    buf.close();
+
+    qint64 res = 0;
+
+    res += socket->write(dataSize);
+    res += socket->write(byteArray);
+
+    return res;
 }
 
-QByteArray BthRemoteDeviceCtx::readData(qint64 maxSize){
-    return socket->read(maxSize);
+QByteArray BthRemoteDeviceCtx::readData(){
+    QByteArray data = socket->read(sizeof(qint64));
+    qint64 dataLen;
+
+    QBuffer buf(&data);
+    buf.open(QBuffer::ReadOnly);
+
+    QDataStream stream(&buf);
+    stream >> dataLen;
+
+    buf.close();
+
+    return socket->read(dataLen);
 }
 
 void BthRemoteDeviceCtx::setSocket(QBluetoothSocket* socket){

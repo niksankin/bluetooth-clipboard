@@ -4,5 +4,6 @@
 #include <QtBluetooth/QBluetoothUuid>
 
 extern QBluetoothUuid serviceUuid;
+extern int maxDataLen;
 
 #endif // CONSTANTS_H

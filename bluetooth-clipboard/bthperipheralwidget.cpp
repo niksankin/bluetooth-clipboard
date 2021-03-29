@@ -44,20 +44,15 @@ BthPeripheralWidget::BthPeripheralWidget(QWidget *parent) :
     });
 
     connect(ui->clientDevices, &QListWidget::currentItemChanged, this, [this](QListWidgetItem *current, QListWidgetItem *previous){
-        if(current != nullptr){
-            ui->connectionControl->setEnabled(true);
+        ui->connectionControl->setEnabled(true);
 
-            emit deviceChanged(current->text());
-        }
-        else{
-            resetWidget();
-
-            emit emptyDeviceSelection();
-        }
+        emit deviceChanged(current->text(), true);
     });
 
     connect(peripheralBackend, &BthPeripheralDevice::deviceConnected, this, [this](const QString& name){
         ui->clientDevices->addItem(name);
+
+        emit deviceConnected(name);
     });
 
     connect(peripheralBackend, &BthPeripheralDevice::deviceDisconnected, this, [this](const QString& name){
@@ -70,8 +65,13 @@ BthPeripheralWidget::BthPeripheralWidget(QWidget *parent) :
 
         delete item;
 
-        if(!ui->clientDevices->count())
-            ui->connectionControl->setEnabled(false);
+        if(!ui->clientDevices->count()){
+            resetWidget();
+
+            emit emptyDeviceSelection();
+        }
+        else
+            emit deviceDisconnected(name);
     });
 
     connect(peripheralBackend, &BthPeripheralDevice::dataReceived, this, [this](const QString& name, QByteArray data){

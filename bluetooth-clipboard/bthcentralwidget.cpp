@@ -65,7 +65,7 @@ BthCentralWidget::BthCentralWidget(QWidget *parent) :
             else
                 ui->connectionControl->setText(connectToDeviceStr);
 
-            emit deviceChanged(current->text());
+            emit deviceChanged(current->text(), isConnected);
         }
         else{
             resetWidget();
@@ -83,6 +83,8 @@ BthCentralWidget::BthCentralWidget(QWidget *parent) :
 
         if(currentDevice->text() == address.toString())
             ui->connectionControl->setText(disconnectDeviceStr);
+
+        emit deviceConnected(address.toString());
     });
 
     connect(centralBackend, &BthCentralDevice::deviceDisconnected, this, [this](QBluetoothAddress address){
@@ -90,6 +92,8 @@ BthCentralWidget::BthCentralWidget(QWidget *parent) :
 
         if(currentDevice->text() == address.toString())
             ui->connectionControl->setText(connectToDeviceStr);
+
+        emit deviceDisconnected(address.toString());
     });
 
     connect(centralBackend, &BthCentralDevice::dataReceived, this, [this](QBluetoothAddress address, QByteArray data){

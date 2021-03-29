@@ -25,7 +25,9 @@ signals:
 
 public slots:
     void onDeviceDataReceived(const QString id, QByteArray data);
-    void onDeviceChanged(const QString id);
+    void onDeviceChanged(const QString id, bool isConnected);
+    void onDeviceConnected(const QString id);
+    void onDeviceDisconnected(const QString id);
     void onAbsentDevice();
 
 private:

@@ -27,6 +27,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt5 COMPONENTS Widgets Bluetooth REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Bluetooth REQUIRED)
 
+if(ANDROID)
+    find_package(QT NAMES Qt5 COMPONENTS AndroidExtras REQUIRED)
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS AndroidExtras REQUIRED)
+endif()
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
@@ -51,6 +56,8 @@ set(PROJECT_SOURCES
         constants.h
         bthremotedevicectx.cpp
         bthremotedevicectx.h
+        bthplatformtools.cpp
+        bthplatformtools.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -70,3 +77,9 @@ else()
 endif()
 
 target_link_libraries(bluetooth-clipboard PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Bluetooth)
+
+if(ANDROID)
+    target_link_libraries(bluetooth-clipboard PRIVATE Qt${QT_VERSION_MAJOR}::AndroidExtras)
+else()
+    target_link_libraries(bluetooth-clipboard PRIVATE Bthprops.dll)
+endif()

@@ -56,22 +56,6 @@ bool BthCentralDevice::isDeviceConnected(const QBluetoothAddress& addr){
     return clientsCtx[addr.toString()]->getSocketState() == QBluetoothSocket::SocketState::ConnectedState;
 }
 
-void BthCentralDevice::write(const QBluetoothAddress& addr, const QByteArray& data){
-    QByteArray dataSize;
-    QBuffer buf(&dataSize);
-    buf.open(QBuffer::WriteOnly);
-
-    qint64 size = data.size();
-
-    QDataStream stream(&buf);
-    stream << size;
-
-    buf.close();
-
-    clientsCtx[addr.toString()]->writeData(dataSize);
-    clientsCtx[addr.toString()]->writeData(data);
-}
-
 void BthCentralDevice::onDeviceFound(const QBluetoothDeviceInfo& deviceInfo){
     QBluetoothAddress addr = deviceInfo.address();
 
@@ -102,18 +86,11 @@ void BthCentralDevice::onDeviceFound(const QBluetoothDeviceInfo& deviceInfo){
 void BthCentralDevice::onReceiveDataReady(){
     BthRemoteDeviceCtx* ctx = static_cast<BthRemoteDeviceCtx*>(sender());
 
-    QByteArray data = ctx->readData(sizeof(qint64));
-    qint64 dataLen;
-
-    QBuffer buf(&data);
-    buf.open(QBuffer::ReadOnly);
-
-    QDataStream stream(&buf);
-    stream >> dataLen;
-
-    buf.close();
-
-    data = ctx->readData(dataLen);
+    QByteArray data = ctx->readData();
 
     emit dataReceived(ctx->getPeerAddress(), data);
+}
+
+void BthCentralDevice::write(const QBluetoothAddress& addr, const QByteArray& data){
+    clientsCtx[addr.toString()]->writeData(data);
 }

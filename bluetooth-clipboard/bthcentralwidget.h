@@ -18,7 +18,9 @@ public:
     ~BthCentralWidget();
 
 signals:
-    void deviceChanged(const QString address);
+    void deviceChanged(const QString address, bool isConnected);
+    void deviceConnected(const QString address);
+    void deviceDisconnected(const QString address);
     void deviceDataReceived(const QString address, QByteArray data);
     void scanClicked(bool isActiveState);
     void emptyDeviceSelection();
